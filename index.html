@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Resonant Creature Synth</title>
+        <link rel="stylesheet" href="css/main.css" />
+        <link rel="stylesheet" href="css/components.css" />
+    </head>
+    <body>
+        <div id="start-prompt">
+            <h1>AETHERBODY</h1>
+            <p>CLICK OR PRESS ANY KEY TO BEGIN</p>
+            <div class="controls-info">
+                KEYBOARD: A S D F G H J K = NOTES &nbsp;|&nbsp; Z X = OCTAVE<br />
+                MOUSE: CLICK &amp; DRAG THE FIELD FOR TIMBRE<br />
+                GAMEPAD: CONNECT ANY CONTROLLER &nbsp;|&nbsp; STICKS + TRIGGERS = EXPRESSION
+            </div>
+        </div>
+
+        <canvas id="main-canvas"></canvas>
+
+        <div id="ui-overlay">
+            <div id="top-bar">
+                <div id="title">AETHERBODY</div>
+                <div id="status-indicators">
+                    <div class="indicator" id="ind-audio">
+                        <div class="indicator-dot"></div>
+                        AUDIO
+                    </div>
+                    <div class="indicator" id="ind-keys">
+                        <div class="indicator-dot"></div>
+                        KEYS
+                    </div>
+                    <div class="indicator" id="ind-mouse">
+                        <div class="indicator-dot"></div>
+                        MOUSE
+                    </div>
+                    <div class="indicator" id="ind-gamepad">
+                        <div class="indicator-dot"></div>
+                        GAMEPAD
+                    </div>
+                </div>
+            </div>
+
+            <div id="center-area">
+                <div id="play-field"></div>
+            </div>
+
+            <div id="bottom-bar">
+                <div class="macro-control">
+                    <div class="macro-value-bar">
+                        <div class="macro-value-fill" id="m-strike" style="width: 40%; background: #f77"></div>
+                    </div>
+                    <div class="macro-label">STRIKE</div>
+                </div>
+                <div class="macro-control">
+                    <div class="macro-value-bar">
+                        <div class="macro-value-fill" id="m-body" style="width: 60%; background: #fa7"></div>
+                    </div>
+                    <div class="macro-label">BODY</div>
+                </div>
+                <div class="macro-control">
+                    <div class="macro-value-bar">
+                        <div class="macro-value-fill" id="m-material" style="width: 30%; background: #ff7"></div>
+                    </div>
+                    <div class="macro-label">MATERIAL</div>
+                </div>
+                <div class="macro-control">
+                    <div class="macro-value-bar">
+                        <div class="macro-value-fill" id="m-bright" style="width: 50%; background: #7f7"></div>
+                    </div>
+                    <div class="macro-label">BRIGHT</div>
+                </div>
+                <div class="macro-control">
+                    <div class="macro-value-bar">
+                        <div class="macro-value-fill" id="m-bloom" style="width: 45%; background: #7ff"></div>
+                    </div>
+                    <div class="macro-label">BLOOM</div>
+                </div>
+                <div class="macro-control">
+                    <div class="macro-value-bar">
+                        <div class="macro-value-fill" id="m-drift" style="width: 25%; background: #77f"></div>
+                    </div>
+                    <div class="macro-label">DRIFT</div>
+                </div>
+                <div class="macro-control">
+                    <div class="macro-value-bar">
+                        <div class="macro-value-fill" id="m-pressure" style="width: 0%; background: #f7f"></div>
+                    </div>
+                    <div class="macro-label">PRESSURE</div>
+                </div>
+                <div class="macro-control">
+                    <div class="macro-value-bar">
+                        <div class="macro-value-fill" id="m-space" style="width: 35%; background: #faf"></div>
+                    </div>
+                    <div class="macro-label">SPACE</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="note-display"></div>
+
+        <div id="keyboard-hint">
+            <div class="key-row">
+                <span class="key-cap" data-key="q">Q</span>
+                <span class="key-cap" data-key="w">W</span>
+                <span class="key-cap" data-key="e">E</span>
+                <span class="key-cap" data-key="r">R</span>
+                <span class="key-cap" data-key="t">T</span>
+                <span class="key-cap" data-key="y">Y</span>
+                <span class="key-cap" data-key="u">U</span>
+                <span class="key-cap" data-key="i">I</span>
+            </div>
+            <div class="key-row">
+                <span class="key-cap" data-key="a">A</span>
+                <span class="key-cap" data-key="s">S</span>
+                <span class="key-cap" data-key="d">D</span>
+                <span class="key-cap" data-key="f">F</span>
+                <span class="key-cap" data-key="g">G</span>
+                <span class="key-cap" data-key="h">H</span>
+                <span class="key-cap" data-key="j">J</span>
+                <span class="key-cap" data-key="k">K</span>
+            </div>
+            <div class="key-row" style="opacity: 0.5">
+                <span class="key-cap" data-key="z">Z&#9660;</span>
+                <span class="key-cap" data-key="x">X&#9650;</span>
+                <span class="key-cap" style="margin-left: 10px" data-key=" ">SPACE=HOLD</span>
+            </div>
+        </div>
+
+        <div id="preset-bar">
+            <button class="preset-btn active" data-preset="organic">ORGANIC</button>
+            <button class="preset-btn" data-preset="glass">GLASS</button>
+            <button class="preset-btn" data-preset="deep">DEEP BASS</button>
+            <button class="preset-btn" data-preset="pad">LUSH PAD</button>
+            <button class="preset-btn" data-preset="alien">ALIEN</button>
+            <button class="preset-btn" data-preset="bell">BELL</button>
+        </div>
+
+        <div id="gamepad-overlay"></div>
+
+        <script type="module" src="js/main.js"></script>
+    </body>
+</html>

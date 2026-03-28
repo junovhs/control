@@ -1,0 +1,125 @@
+/* ============================================================
+   AETHERBODY - Base & Layout Styles
+   ============================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0a0a0f;
+    color: #e0e0e8;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    user-select: none;
+}
+
+#main-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+#ui-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+}
+
+#top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    pointer-events: auto;
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#title {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #7af, #f7a, #af7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#center-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+#play-field {
+    width: 70vmin;
+    height: 70vmin;
+    max-width: 700px;
+    max-height: 700px;
+    border-radius: 50%;
+    position: relative;
+    pointer-events: auto;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+#bottom-bar {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding: 16px 20px;
+    pointer-events: auto;
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#note-display {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: 200;
+    letter-spacing: 6px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+    z-index: 2;
+    text-shadow: 0 0 20px rgba(120, 170, 255, 0.5);
+}
+
+#note-display.visible {
+    opacity: 0.8;
+}
+
+#gamepad-overlay {
+    position: fixed;
+    top: 50px;
+    right: 20px;
+    font-size: 10px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 2;
+    text-align: right;
+    line-height: 1.6;
+}
