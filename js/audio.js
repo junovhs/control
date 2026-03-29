@@ -12,7 +12,7 @@ export function initAudio() {
     });
 
     state.masterGain = state.ctx.createGain();
-    state.masterGain.gain.value = 0.5;
+    state.masterGain.gain.value = 0.75;
 
     // Compressor
     const compressor = state.ctx.createDynamicsCompressor();

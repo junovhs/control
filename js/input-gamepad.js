@@ -1,12 +1,32 @@
 // ============================================================
-// AETHERBODY - Gamepad Input
+// AETHERBODY - Gamepad Input (Redesigned)
 // ============================================================
+//
+// MAPPING (standard gamepad):
+//   A (0)        = Play chord slot 0
+//   B (1)        = Play chord slot 1
+//   X (2)        = Play chord slot 2
+//   Y (3)        = Play chord slot 3
+//   LB (4)       = Octave down
+//   RB (5)       = Octave up
+//   LT (6)       = Pressure / sustain (analog)
+//   RT (7)       = Strike intensity (analog)
+//   Select (8)   = Toggle record mode
+//   Start (9)    = Toggle sequencer play
+//   D-Up (12)    = Transpose up
+//   D-Down (13)  = Transpose down
+//   D-Left (14)  = Previous preset
+//   D-Right (15) = Next preset
+//   Right Stick  = Brightness (X) / Material (Y) timbre
+//   Left Stick   = Drift (Y) / Bloom (X)
+//
 
 import { state } from './state.js';
-import { gamepadScale } from './notes.js';
 import { initAudio } from './audio.js';
-import { noteOn, noteOff, updateMacroUI, applyPreset } from './engine.js';
+import { playChordSlot, releaseChordSlot, updateMacroUI, applyPreset, updateChordUI, updateSequencerUI } from './engine.js';
 import { presets } from './presets.js';
+import { chordSlots } from './chord-slots.js';
+import { sequencer } from './sequencer.js';
 
 export function initGamepadInput() {
     window.addEventListener('gamepadconnected', (e) => {
@@ -30,6 +50,9 @@ export function initGamepadInput() {
     });
 }
 
+// Track which chord slots are held by the controller
+const gpChordHeld = [false, false, false, false];
+
 export function pollGamepad() {
     if (state.gamepadIndex < 0) return;
 
@@ -48,7 +71,7 @@ export function pollGamepad() {
     gs.rightStick.x = applyDeadzone(gp.axes[2] || 0);
     gs.rightStick.y = applyDeadzone(gp.axes[3] || 0);
 
-    // Triggers (standard mapping: button 6 = left, button 7 = right)
+    // Triggers
     gs.leftTrigger = gp.buttons[6] ? gp.buttons[6].value : 0;
     gs.rightTrigger = gp.buttons[7] ? gp.buttons[7].value : 0;
 
@@ -57,74 +80,27 @@ export function pollGamepad() {
         gs.buttons[i] = gp.buttons[i].pressed;
     }
 
-    // ---- Map controller to instrument ----
-
-    // Right stick -> timbre field
-    if (Math.abs(gs.rightStick.x) > 0 || Math.abs(gs.rightStick.y) > 0) {
-        state.macros.brightness = (gs.rightStick.x + 1) / 2;
-        state.macros.material = (1 - gs.rightStick.y) / 2;
-        state.fieldX = (gs.rightStick.x + 1) / 2;
-        state.fieldY = (gs.rightStick.y + 1) / 2;
-    }
-
-    // Left trigger -> pressure/sustain
-    state.macros.pressure = gs.leftTrigger;
-
-    // Right trigger -> strike/excite
-    if (gs.rightTrigger > 0.1) {
-        state.macros.strike = 0.3 + gs.rightTrigger * 0.7;
-        if (gs.rightTrigger > 0.3) {
-            for (const [key, voice] of state.activeNotes) {
-                if (voice.alive && Math.random() < 0.1) {
-                    voice.reExcite(gs.rightTrigger * 0.5);
-                }
-            }
-        }
-    }
-
-    // Left stick -> note selection
-    const lsAngle = Math.atan2(gs.leftStick.y, gs.leftStick.x);
-    const lsDist = Math.sqrt(gs.leftStick.x ** 2 + gs.leftStick.y ** 2);
-
-    if (lsDist > 0.5) {
-        const normalizedAngle = (lsAngle + Math.PI) / (2 * Math.PI);
-        const scaleIndex = Math.floor(normalizedAngle * gamepadScale.length);
-        const semitone = gamepadScale[scaleIndex % gamepadScale.length];
-        const midi = state.octave * 12 + semitone + 24;
-        const gpKey = 'gp_stick_' + scaleIndex;
-
-        if (!state.activeNotes.has(gpKey)) {
-            for (const [key, voice] of state.activeNotes) {
-                if (key.startsWith('gp_stick_') && key !== gpKey) {
-                    voice.release();
-                    state.activeNotes.delete(key);
-                }
-            }
-            noteOn(gpKey, midi, 0.5 + lsDist * 0.3);
-        }
-    } else {
-        for (const [key, voice] of state.activeNotes) {
-            if (key.startsWith('gp_stick_')) {
-                voice.release();
-                state.activeNotes.delete(key);
-            }
-        }
-    }
-
-    // Face buttons -> chord/notes (A=0, B=1, X=2, Y=3)
-    const faceButtonNotes = [0, 4, 7, 12];
+    // ---- FACE BUTTONS: Play chord slots ----
     for (let i = 0; i < 4; i++) {
-        const gpKey = 'gp_btn_' + i;
-        if (gs.buttons[i] && !gs.prevButtons[i]) {
-            const midi = state.octave * 12 + faceButtonNotes[i] + 24;
-            noteOn(gpKey, midi, 0.6 + gs.rightTrigger * 0.3);
-            state.visualEnergy = Math.min(1, state.visualEnergy + 0.3);
-        } else if (!gs.buttons[i] && gs.prevButtons[i]) {
-            noteOff(gpKey);
+        const pressed = gs.buttons[i] && !gs.prevButtons[i];
+        const released = !gs.buttons[i] && gs.prevButtons[i];
+
+        if (pressed) {
+            const velocity = 0.5 + gs.rightTrigger * 0.5;
+            playChordSlot(i, velocity, 'gp');
+            gpChordHeld[i] = true;
+            state.visualEnergy = Math.min(1, state.visualEnergy + 0.4);
+
+            // Live record to sequencer
+            sequencer.recordSlot(i);
+        }
+        if (released) {
+            releaseChordSlot(i, 'gp');
+            gpChordHeld[i] = false;
         }
     }
 
-    // Shoulder buttons -> octave (LB=4, RB=5)
+    // ---- SHOULDER BUTTONS: Octave ----
     if (gs.buttons[4] && !gs.prevButtons[4]) {
         state.octave = Math.max(1, state.octave - 1);
     }
@@ -132,7 +108,56 @@ export function pollGamepad() {
         state.octave = Math.min(7, state.octave + 1);
     }
 
-    // D-pad -> preset switching (Left=14, Right=15)
+    // ---- TRIGGERS: Expression ----
+    // Left trigger = pressure / sustain
+    state.macros.pressure = gs.leftTrigger;
+
+    // Right trigger = strike intensity (modifies velocity of next hit)
+    if (gs.rightTrigger > 0.1) {
+        state.macros.strike = 0.3 + gs.rightTrigger * 0.7;
+    }
+
+    // ---- RIGHT STICK: Timbre field ----
+    if (Math.abs(gs.rightStick.x) > 0 || Math.abs(gs.rightStick.y) > 0) {
+        state.macros.brightness = Math.max(0, Math.min(1, (gs.rightStick.x + 1) / 2));
+        state.macros.material = Math.max(0, Math.min(1, (1 - gs.rightStick.y) / 2));
+        state.fieldX = (gs.rightStick.x + 1) / 2;
+        state.fieldY = (gs.rightStick.y + 1) / 2;
+    }
+
+    // ---- LEFT STICK: Drift / Bloom ----
+    state.macros.drift = Math.max(0, Math.min(1, 0.25 - gs.leftStick.y * 0.5));
+    state.macros.bloom = Math.max(0, Math.min(1, 0.45 + gs.leftStick.x * 0.4));
+
+    // ---- SELECT (8): Toggle record ----
+    if (gs.buttons[8] && !gs.prevButtons[8]) {
+        if (sequencer.playing) {
+            sequencer.toggleRecord();
+        } else {
+            // If not playing, select clears the sequence
+            sequencer.clear();
+        }
+        updateSequencerUI(-1);
+    }
+
+    // ---- START (9): Toggle sequencer play ----
+    if (gs.buttons[9] && !gs.prevButtons[9]) {
+        sequencer.toggle(performance.now());
+        updateSequencerUI(-1);
+    }
+
+    // ---- D-PAD: Transpose / Presets ----
+    // Up/Down = transpose all chord slots
+    if (gs.buttons[12] && !gs.prevButtons[12]) {
+        chordSlots.transposeAll(1);
+        updateChordUI();
+    }
+    if (gs.buttons[13] && !gs.prevButtons[13]) {
+        chordSlots.transposeAll(-1);
+        updateChordUI();
+    }
+
+    // Left/Right = cycle presets
     const presetNames = Object.keys(presets);
     if (gs.buttons[14] && !gs.prevButtons[14]) {
         const idx = presetNames.indexOf(state.currentPreset);
@@ -144,10 +169,6 @@ export function pollGamepad() {
         const newIdx = (idx + 1) % presetNames.length;
         applyPreset(presetNames[newIdx]);
     }
-
-    // Sticks -> drift / bloom
-    state.macros.drift = Math.max(0, Math.min(1, 0.25 + gs.rightStick.y * -0.5));
-    state.macros.bloom = Math.max(0, Math.min(1, 0.45 + gs.leftStick.y * -0.4));
 
     updateMacroUI();
 }

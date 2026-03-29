@@ -46,13 +46,14 @@ export class Voice {
             filter.type = 'bandpass';
             filter.frequency.value = resFreq;
 
-            const baseQ = 20 + bloom * 180;
+            // Wider Q = more energy throughput while still resonant
+            const baseQ = 10 + bloom * 80;
             const bandBrightness = Math.pow(brightness, 0.5 + i * 0.08);
             filter.Q.value = baseQ * bandBrightness;
 
             const gain = ctx.createGain();
             const bandAmp = Math.pow(bandBrightness, 1.5) / (1 + i * 0.15 * (1 - brightness));
-            gain.gain.value = bandAmp * bodyGain * 0.15;
+            gain.gain.value = bandAmp * bodyGain * 0.4;
 
             filter.connect(gain);
             gain.connect(this.panner);
@@ -66,7 +67,7 @@ export class Voice {
 
         // Fade in
         this.output.gain.setValueAtTime(0, ctx.currentTime);
-        this.output.gain.linearRampToValueAtTime(0.3 + velocity * 0.4, ctx.currentTime + 0.005);
+        this.output.gain.linearRampToValueAtTime(0.5 + velocity * 0.5, ctx.currentTime + 0.005);
 
         // Sustained exciter for pressure mode
         this.sustainedSource = null;
@@ -89,7 +90,7 @@ export class Voice {
 
             for (let i = 0; i < bufferSize; i++) {
                 const env = Math.exp(-i / (bufferSize * (0.1 + strike * 0.4)));
-                data[i] = (Math.random() * 2 - 1) * env * velocity;
+                data[i] = (Math.random() * 2 - 1) * env * velocity * 2.5;
             }
 
             const source = ctx.createBufferSource();
@@ -105,7 +106,7 @@ export class Voice {
 
             for (let i = 0; i < bufferSize; i++) {
                 const t = i / bufferSize;
-                data[i] = Math.sin(t * Math.PI * 50 * strike) * Math.exp(-t * 20) * velocity * (1 + strike);
+                data[i] = Math.sin(t * Math.PI * 50 * strike) * Math.exp(-t * 20) * velocity * (1 + strike) * 2;
             }
 
             const source = ctx.createBufferSource();
@@ -124,8 +125,8 @@ export class Voice {
             for (let i = 0; i < bufferSize; i++) {
                 const t = i / ctx.sampleRate;
                 const env = Math.exp(-t * 100 * strike);
-                data[i] = (Math.sin(2 * Math.PI * pulseFreq * t) > 0 ? 1 : -1) * env * velocity * 0.7;
-                if (i < 40) data[i] += (Math.random() * 2 - 1) * velocity * strike;
+                data[i] = (Math.sin(2 * Math.PI * pulseFreq * t) > 0 ? 1 : -1) * env * velocity * 1.5;
+                if (i < 40) data[i] += (Math.random() * 2 - 1) * velocity * strike * 2;
             }
 
             const source = ctx.createBufferSource();
@@ -144,7 +145,7 @@ export class Voice {
             for (let i = 0; i < bufferSize; i++) {
                 chaosState = 3.99 * chaosState * (1 - chaosState);
                 const env = Math.exp(-i / (bufferSize * 0.3));
-                data[i] = (chaosState * 2 - 1) * env * velocity;
+                data[i] = (chaosState * 2 - 1) * env * velocity * 2.5;
             }
 
             const source = ctx.createBufferSource();
@@ -165,7 +166,7 @@ export class Voice {
         const data = buffer.getChannelData(0);
 
         for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * 0.3;
+            data[i] = (Math.random() * 2 - 1) * 0.5;
         }
 
         this.sustainedSource = ctx.createBufferSource();
@@ -173,7 +174,7 @@ export class Voice {
         this.sustainedSource.loop = true;
 
         this.sustainedGain = ctx.createGain();
-        this.sustainedGain.gain.value = pressure * 0.15;
+        this.sustainedGain.gain.value = pressure * 0.4;
 
         this.sustainedSource.connect(this.sustainedGain);
         for (const res of this.resonators) {
@@ -186,7 +187,7 @@ export class Voice {
     updatePressure(pressure) {
         if (this.sustainedGain) {
             this.sustainedGain.gain.linearRampToValueAtTime(
-                pressure * 0.15,
+                pressure * 0.4,
                 state.ctx.currentTime + 0.05,
             );
         } else if (pressure > 0.05 && !this.releasing) {
@@ -200,7 +201,7 @@ export class Voice {
         const ctx = state.ctx;
         this.output.gain.cancelScheduledValues(ctx.currentTime);
         this.output.gain.setValueAtTime(this.output.gain.value, ctx.currentTime);
-        this.output.gain.linearRampToValueAtTime(0.3 + velocity * 0.4, ctx.currentTime + 0.005);
+        this.output.gain.linearRampToValueAtTime(0.5 + velocity * 0.5, ctx.currentTime + 0.005);
         this.releasing = false;
     }
 

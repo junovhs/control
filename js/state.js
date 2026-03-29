@@ -34,10 +34,13 @@ export const state = {
     fieldVelocity: 0,
 
     // Notes
-    octave: 4,
+    octave: 3,
     activeNotes: new Map(),
     heldNotes: new Set(),
     holdMode: false,
+
+    // Chord editing
+    editingSlot: -1, // -1 = not editing, 0-3 = editing that slot
 
     // Gamepad
     gamepad: null,

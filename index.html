@@ -12,9 +12,9 @@
             <h1>AETHERBODY</h1>
             <p>CLICK OR PRESS ANY KEY TO BEGIN</p>
             <div class="controls-info">
-                KEYBOARD: A S D F G H J K = NOTES &nbsp;|&nbsp; Z X = OCTAVE<br />
-                MOUSE: CLICK &amp; DRAG THE FIELD FOR TIMBRE<br />
-                GAMEPAD: CONNECT ANY CONTROLLER &nbsp;|&nbsp; STICKS + TRIGGERS = EXPRESSION
+                GAMEPAD: A B X Y = CHORDS &nbsp;|&nbsp; TRIGGERS = EXPRESSION<br />
+                KEYBOARD: A-K = NOTES &nbsp;|&nbsp; 1-4 = CHORDS &nbsp;|&nbsp; Z X = OCTAVE<br />
+                MOUSE: CLICK &amp; DRAG THE FIELD FOR TIMBRE
             </div>
         </div>
 
@@ -101,6 +101,68 @@
 
         <div id="note-display"></div>
 
+        <!-- Chord Slots Panel -->
+        <div id="chord-panel">
+            <div class="panel-label">CHORD SLOTS</div>
+            <div class="chord-slot" data-slot="0">
+                <span class="slot-key">A<span class="slot-num">1</span></span>
+                <span class="slot-name">I</span>
+                <span class="slot-notes">C3 E3 G3</span>
+            </div>
+            <div class="chord-slot" data-slot="1">
+                <span class="slot-key">B<span class="slot-num">2</span></span>
+                <span class="slot-name">IV</span>
+                <span class="slot-notes">F3 A3 C4</span>
+            </div>
+            <div class="chord-slot" data-slot="2">
+                <span class="slot-key">X<span class="slot-num">3</span></span>
+                <span class="slot-name">V</span>
+                <span class="slot-notes">G2 B2 D3</span>
+            </div>
+            <div class="chord-slot" data-slot="3">
+                <span class="slot-key">Y<span class="slot-num">4</span></span>
+                <span class="slot-name">vi</span>
+                <span class="slot-notes">A2 C3 E3</span>
+            </div>
+            <div id="transpose-display">TRANSPOSE +0</div>
+        </div>
+
+        <!-- Preset Bar -->
+        <div id="preset-bar">
+            <div class="panel-label">PRESETS</div>
+            <button class="preset-btn active" data-preset="organic">ORGANIC</button>
+            <button class="preset-btn" data-preset="glass">GLASS</button>
+            <button class="preset-btn" data-preset="deep">DEEP BASS</button>
+            <button class="preset-btn" data-preset="pad">LUSH PAD</button>
+            <button class="preset-btn" data-preset="alien">ALIEN</button>
+            <button class="preset-btn" data-preset="bell">BELL</button>
+        </div>
+
+        <!-- Sequencer Strip -->
+        <div id="sequencer-strip">
+            <div class="seq-controls">
+                <button id="seq-play-btn" title="Play/Stop (` key)">&#9654;</button>
+                <button id="seq-rec-btn" title="Record (~ key)">&#9679;</button>
+            </div>
+            <div id="seq-steps">
+                <div class="seq-step" data-step="0"></div>
+                <div class="seq-step" data-step="1"></div>
+                <div class="seq-step" data-step="2"></div>
+                <div class="seq-step" data-step="3"></div>
+                <div class="seq-step" data-step="4"></div>
+                <div class="seq-step" data-step="5"></div>
+                <div class="seq-step" data-step="6"></div>
+                <div class="seq-step" data-step="7"></div>
+            </div>
+            <div class="seq-bpm-controls">
+                <button id="bpm-down" title="BPM - (- key)">-</button>
+                <span id="seq-bpm">110</span>
+                <span class="seq-bpm-label">BPM</span>
+                <button id="bpm-up" title="BPM + (= key)">+</button>
+            </div>
+        </div>
+
+        <!-- Keyboard Hint -->
         <div id="keyboard-hint">
             <div class="key-row">
                 <span class="key-cap" data-key="q">Q</span>
@@ -125,17 +187,9 @@
             <div class="key-row" style="opacity: 0.5">
                 <span class="key-cap" data-key="z">Z&#9660;</span>
                 <span class="key-cap" data-key="x">X&#9650;</span>
-                <span class="key-cap" style="margin-left: 10px" data-key=" ">SPACE=HOLD</span>
+                <span class="key-cap" style="margin-left: 8px">1-4=CHORDS</span>
+                <span class="key-cap" style="margin-left: 4px">`=SEQ</span>
             </div>
-        </div>
-
-        <div id="preset-bar">
-            <button class="preset-btn active" data-preset="organic">ORGANIC</button>
-            <button class="preset-btn" data-preset="glass">GLASS</button>
-            <button class="preset-btn" data-preset="deep">DEEP BASS</button>
-            <button class="preset-btn" data-preset="pad">LUSH PAD</button>
-            <button class="preset-btn" data-preset="alien">ALIEN</button>
-            <button class="preset-btn" data-preset="bell">BELL</button>
         </div>
 
         <div id="gamepad-overlay"></div>
